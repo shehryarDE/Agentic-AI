@@ -1,0 +1,36 @@
+name: Agentic AI CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f Graphs/requirements.txt ]; then pip install -r Graphs/requirements.txt; fi
+        pip install pytest flake8
+
+    - name: Lint Code for Syntax Errors
+      run: |
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+    - name: Verify Agent Code Compiles
+      run: |
+        python -m py_compile Agents/rag_agent.py Agents/memory_agent.py
